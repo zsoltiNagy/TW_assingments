@@ -52,6 +52,7 @@
             this.DirectoryContentBox.BackColor = System.Drawing.Color.Chartreuse;
             this.DirectoryContentBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.DirectoryContentBox.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.DirectoryContentBox.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
             this.DirectoryContentBox.Font = new System.Drawing.Font("Courier New", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.DirectoryContentBox.ForeColor = System.Drawing.Color.Black;
             this.DirectoryContentBox.FormattingEnabled = true;
