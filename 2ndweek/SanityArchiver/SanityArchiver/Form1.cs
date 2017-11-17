@@ -1,46 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
+using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace SanityArchiver
 {
     public partial class HalfCommander : Form
     {
-        string baseRootPath;
-        DirectoryInfo currentDir;
+        string drivePath;
         string copyDir;
+        DirectoryInfo currentDir;
+        DirectoryInfo drive;
 
         public HalfCommander()
         {
             InitializeComponent();
-            baseRootPath = @"C:\";
-            FillDirectoryContentBox(@"C:\Users\Zsolt Nagy\dotNET");
+            drivePath = @"C:\";
+            drive = new DirectoryInfo(drivePath);
+            FillDirectoryContentBoxFromDir(@"C:\Users\Zsolt Nagy\dotNET");
         }
 
         private void Open_Click(object sender, EventArgs e)
         {
-            string path = currentDir.FullName + "\\" + DirectoryContentBox.SelectedItem.ToString();
-            FillDirectoryContentBox(path);
-        }
-
-        private void FillDirectoryContentBox(string path)
-        {
-            DirectoryContentBox.Items.Clear();
-            currentDir = new DirectoryInfo(path);
-            Console.WriteLine(path);
-            foreach (var directory in currentDir.GetDirectories()) {
-                    DirectoryContentBox.Items.Add(directory.ToString());
-            }
-            foreach (var file in currentDir.GetFiles())
+            try
             {
-                DirectoryContentBox.Items.Add(file.ToString());
+                string path = GetPath();
+                if (!FileHandler.IsDirectory(path))
+                {
+                    FileInfo fileInfo = new FileInfo(path);
+                    Process.Start(fileInfo.FullName);                   
+                }
+                else
+                {
+                    FillDirectoryContentBoxFromDir(path);
+                }
+            } catch (NullReferenceException)
+            {
+                Reporter.Text = "You should select something first.";
             }
         }
 
@@ -48,11 +45,11 @@ namespace SanityArchiver
         {
             try
             {
-                FillDirectoryContentBox(currentDir.Parent.FullName);
+                FillDirectoryContentBoxFromDir(currentDir.Parent.FullName);
             }
             catch (NullReferenceException)
             {
-                FillDirectoryContentBox(baseRootPath);
+                FillDirectoryContentBoxFromDir(drivePath);
             }
         }
 
@@ -64,9 +61,106 @@ namespace SanityArchiver
 
         private void PasteButton_Click(object sender, EventArgs e)
         {
-            Directory.Move(CopyBox.Text, currentDir.FullName + "\\" + copyDir);
+            try
+            {
+                Directory.Move(CopyBox.Text, currentDir.FullName + "\\" + copyDir);
+            } catch (IOException m)
+            {
+                Reporter.Text = m.Message;
+            }
             CopyBox.Text = "";
-            FillDirectoryContentBox(currentDir.FullName);
+            FillDirectoryContentBoxFromDir(currentDir.FullName);
+        }
+
+        private void SearchButton_Click(object sender, EventArgs e)
+        {
+            DirectoryContentBox.Items.Clear();
+            List<string> results = new List<string>();
+            FileHandler.root = currentDir.FullName;
+            FillDirectoryContentBoxFromList(FileHandler.RecursiveSearch(SearchBox.Text, currentDir, results));
+        }
+
+        private void CompressButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                FileInfo fileInfo = new FileInfo(GetPath());
+                FileHandler.ArchiveFile(currentDir, fileInfo);
+                Reporter.Text = "Succesfully compressed " + GetPath();
+            }
+            catch (UnauthorizedAccessException m)
+            {
+                Console.WriteLine(m.Message);
+                Reporter.Text = "Compress unsuccesfull.";
+            }
+            catch (NullReferenceException n)
+            {
+                Reporter.Text = n.Message;
+            }
+            FillDirectoryContentBoxFromDir(currentDir.FullName);
+        }
+
+        private void CryptButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                File.Encrypt(GetPath());
+                Reporter.Text = "Succesfully encrypted " + GetPath();
+            } 
+            catch (UnauthorizedAccessException) {
+                Reporter.Text = "Encryption unsuccesfull";
+            }
+            catch (IOException m)
+            {
+                Reporter.Text = m.Message;
+            } catch (NullReferenceException n)
+            {
+                Reporter.Text = n.Message;
+            }
+        }
+
+        private void DecryptButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                File.Decrypt(GetPath());
+                Reporter.Text = "Succesfully decrypted " + GetPath();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Reporter.Text = "Decryption unsuccesfull";
+            }
+            catch (IOException m)
+            {
+                Reporter.Text = m.Message;
+            }
+            catch (NullReferenceException n)
+            {
+                Reporter.Text = n.Message;
+            }
+        }
+
+        private void AttributesButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                FileAttributesDialog fileAttributesDialog = new FileAttributesDialog();
+                fileAttributesDialog.SetDialogContent(GetPath());
+                fileAttributesDialog.Show();
+            }
+            catch (FileNotFoundException m)
+            {
+                Console.WriteLine(m.Message);
+            }
+            catch (NullReferenceException n)
+            {
+                Console.WriteLine(n.Message);
+            }
+        }
+
+        private void QuitButton_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
     }
 }

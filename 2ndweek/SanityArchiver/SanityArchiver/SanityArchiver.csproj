@@ -45,6 +45,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Form1Part2.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FileAttributesDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FileAttributesDialog.Designer.cs">
+      <DependentUpon>FileAttributesDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FileHandler.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -53,6 +63,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="FileAttributesDialog.resx">
+      <DependentUpon>FileAttributesDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
